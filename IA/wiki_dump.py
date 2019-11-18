@@ -5,7 +5,7 @@ import requests
 import argparse
 from ratelimit import sleep_and_retry
 from ratelimit.exception import RateLimitException
-from settings import SLEEP_PERIOD, OSF_API_URL
+from settings import OSF_API_URL
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
@@ -15,39 +15,25 @@ class WikiDumpError(Exception):
 
 
 @sleep_and_retry
-def get_with_retry(url):
+def get_and_retry_on_429(url):
     resp = requests.get(url)
-    if resp.status_code in (429, 500, 503):
+    if resp.status_code == 429:
         raise RateLimitException(
             message='Too many requests, sleeping.',
-            period_remaining=SLEEP_PERIOD
+            period_remaining=int(resp.headers['Retry-After'])
         )  # This will be caught by @sleep_and_retry and retried
+    return resp
 
-    return resp.json()
 
-
-@sleep_and_retry
 async def get_wiki_pages(guid, page, result={}):
     url = f'{OSF_API_URL}v2/registrations/{guid}/wikis/?page={page}'
-    resp = requests.get(url)
-    if resp.status_code in (429, 500, 503):
-        raise RateLimitException(
-            message='Too many requests, sleeping.',
-            period_remaining=SLEEP_PERIOD
-        )  # This will be caught by @sleep_and_retry and retried
-
-    result[page] = requests.get(url).json()['data']
+    resp = get_and_retry_on_429(url)
+    result[page] = resp.json()['data']
     return result
 
 
-@sleep_and_retry
 async def write_wiki_content(page):
-    resp = requests.get(page['links']['download'])
-    if resp.status_code in (429, 500, 503):
-        raise RateLimitException(
-            message='Too many requests, sleeping.',
-            period_remaining=SLEEP_PERIOD
-        )  # This will be caught by @sleep_and_retry and retried
+    resp = get_and_retry_on_429(page['links']['download'])
 
     with open(os.path.join(HERE, f'/{page["attributes"]["name"]}.md'), 'wb') as fp:
         fp.write(resp.content)
@@ -68,7 +54,7 @@ async def main(guid):
     url = f'{OSF_API_URL}v2/registrations/{guid}/wikis/?page=1'
     tasks = []
 
-    data = get_with_retry(url)
+    data = get_and_retry_on_429(url).json()
     result = {1: data['data']}
 
     if data['links']['next'] is not None:
@@ -94,7 +80,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '-id',
         '--guid',
-        help='The guid of the registration if who\'s wiki you want to dump.',
+        help='The guid of the registration of who\'s wiki you want to dump.',
         required=True
     )
     args = parser.parse_args()

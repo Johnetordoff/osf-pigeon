@@ -75,13 +75,13 @@ class TestWikiDumper(unittest.TestCase):
             ]
 
     @responses.activate
-    @mock.patch('IA.wiki_dump.SLEEP_PERIOD', return_value=1)
-    def test_wiki_dump_retry(self, mock_sleep):
+    def test_wiki_dump_retry(self):
         responses.add(
             responses.Response(
                 responses.GET,
                 'https://localhost:8000/v2/registrations/fxehm/wikis/?page=1',
-                status=500,
+                status=429,
+                headers={'Retry-After': '1'},
             )
         )
         responses.add(
