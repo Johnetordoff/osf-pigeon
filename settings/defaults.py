@@ -7,3 +7,4 @@ IA_SECRET_KEY = 'change to valid token'
 
 OSF_API_URL = 'https://localhost:8000/'
 OSF_LOGS_URL = 'v2/registrations/{}/logs/?page[size]={}'
+IA_URL = 'http://s3.us.archive.org'

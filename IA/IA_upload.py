@@ -12,13 +12,10 @@ from settings import (
     OSF_COLLECTION_NAME,
     IA_ACCESS_KEY,
     IA_SECRET_KEY,
+    IA_URL
 )
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-
-
-class IAException(Exception):
-    pass
 
 
 def mp_from_ids(mp_id: str, mp_keyname: str, bucket: str) -> MultiPartUpload:
@@ -56,19 +53,19 @@ async def upload(bucket_name: str, filename: str, file_content: bytes):
         'Content-Type': 'application/octet-stream',
         'x-archive-meta01-collection': OSF_COLLECTION_NAME,
     }
-    url = 'http://s3.us.archive.org/{}/{}'.format(bucket_name, filename)
+    url = f'{IA_URL}/{bucket_name}/{filename}'
     resp = requests.put(url, headers=headers, data=file_content, stream=True)
 
     if resp.status_code != 200:
         error_json = dict(xmltodict.parse(resp.content))
-        raise IAException(error_json)
+        raise requests.exceptions.HTTPError(error_json)
 
 
 async def chunked_upload(bucket_name: str, filename: str, file_content: bytes):
     conn = boto.connect_s3(
         IA_ACCESS_KEY,
         IA_SECRET_KEY,
-        host='s3.us.archive.org',
+        host=f'{IA_URL}',
         is_secure=False,
         calling_format=OrdinaryCallingFormat(),
     )
