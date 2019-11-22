@@ -7,6 +7,7 @@ from boto.s3.multipart import MultiPartUpload
 import asyncio
 import xmltodict
 from io import BytesIO
+from IA.utils import put_with_retry
 from settings import (
     CHUNK_SIZE,
     OSF_COLLECTION_NAME,
@@ -54,7 +55,7 @@ async def upload(bucket_name: str, filename: str, file_content: bytes):
         'x-archive-meta01-collection': OSF_COLLECTION_NAME,
     }
     url = f'{IA_URL}/{bucket_name}/{filename}'
-    resp = requests.put(url, headers=headers, data=file_content, stream=True)
+    resp = put_with_retry(url, headers=headers, data=file_content, retry_on=(429, 503))
 
     if resp.status_code != 200:
         error_json = dict(xmltodict.parse(resp.content))
