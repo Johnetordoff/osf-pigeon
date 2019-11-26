@@ -4,7 +4,7 @@ import json
 import unittest
 import responses
 import settings
-from IA.IA_consume_logs import create_logs
+from IA.IA_consume_logs import main
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
@@ -37,7 +37,7 @@ class TestIALogs(unittest.TestCase):
         )
 
         with mock.patch('builtins.open', mock.mock_open()) as m:
-            create_logs('njs82', '.', 100, 'asdfasdfasdgfasg', settings.OSF_API_URL)
+            main('njs82', '.', 100, 'asdfasdfasdgfasg')
             m.assert_called_with('./njs82/logs/njs82-1.json', 'w')
             mock_mkdir.assert_called_with('./njs82/logs')
 
@@ -69,7 +69,7 @@ class TestIALogs(unittest.TestCase):
         )
 
         with mock.patch('builtins.open', mock.mock_open()) as m:
-            create_logs('8jpzs', '.', 3, 'asdfasdfasdgfasg', settings.OSF_API_URL)
+            main('8jpzs', '.', 3, 'asdfasdfasdgfasg')
             m.assert_called_with('./8jpzs/logs/8jpzs-2.json', 'w')
             mock_mkdir.assert_called_with('./8jpzs/logs')
 

@@ -3,7 +3,7 @@ import mock
 import unittest
 import responses
 import settings
-from IA.IA_consume_files import consume_files
+from IA.IA_consume_files import main
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
@@ -27,7 +27,7 @@ class TestIAFiles(unittest.TestCase):
             )
 
         with mock.patch('builtins.open', mock.mock_open()) as m:
-            consume_files('sgg32', 'asdfasdfasdgfasg', '.')
+            main('sgg32', 'asdfasdfasdgfasg', '.')
             mock_mkdir.assert_called_with('./sgg32/files')
             m.assert_called_with('./sgg32/files/sgg32.zip', 'wb')
             mock_zipfile.assert_called_with('./sgg32/files/sgg32.zip', 'r')
@@ -50,7 +50,7 @@ class TestIAFiles(unittest.TestCase):
             )
 
         with mock.patch('builtins.open', mock.mock_open()) as m:
-            consume_files('jj81a', None, '.')
+            main('jj81a', None, '.')
             mock_mkdir.assert_called_with('./jj81a/files')
             m.assert_called_with('./jj81a/files/jj81a.zip', 'wb')
             mock_zipfile.assert_called_with('./jj81a/files/jj81a.zip', 'r')

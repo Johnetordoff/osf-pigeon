@@ -9,30 +9,6 @@ import settings
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-parser = argparse.ArgumentParser()
-parser.add_argument(
-    '-g',
-    '--guid',
-    help='This is the GUID of the target node on the OSF'
-)
-parser.add_argument(
-    '-d',
-    '--directory',
-    help='This is the target Directory for the project and its files'
-)
-
-parser.add_argument(
-    '-p',
-    '--pagesize',
-    help='How many logs should appear per file? Default is 100'
-)
-
-parser.add_argument(
-    '-t',
-    '--token',
-    help='Auth token for osf. This is required.'
-)
-
 
 def json_with_pagination(path, guid, page, url, token):
     # Get JSON of registration logs
@@ -76,33 +52,7 @@ def make_json_api_request(url, token):
         return None
 
 
-def main():
-    # Arg Parsing
-    args = parser.parse_args()
-    guid = args.guid
-    directory = args.directory
-    pagesize = args.pagesize
-    bearer_token = args.token
-
-    # Args handling
-    if not guid:
-        raise ValueError('Project GUID must be specified! Use -g')
-    if not bearer_token:
-        raise ValueError('Token must be specified! Use -t')
-    if not directory:
-        # Setting default to current directory
-        directory = '.'
-    if not pagesize:
-        pagesize = 100
-
-    create_logs(guid, directory, pagesize, bearer_token)
-
-
-def create_logs(guid, directory, pagesize, bearer_token, base_url=None, logs_url=None):
-    if not base_url:
-        base_url = settings.OSF_API_URL
-    if not logs_url:
-        logs_url = settings.OSF_LOGS_URL
+def main(guid, directory, pagesize, bearer_token):
 
     # Creating directories
     path = os.path.join(directory, guid)
@@ -115,7 +65,7 @@ def create_logs(guid, directory, pagesize, bearer_token, base_url=None, logs_url
         pass
 
     # Retrieving page 1
-    url = base_url + logs_url.format(guid, pagesize)
+    url = settings.OSF_API_URL + settings.OSF_LOGS_URL.format(guid, pagesize)
     response = json_with_pagination(path, guid, 1, url, bearer_token)
     page_num = 2
 
@@ -129,4 +79,43 @@ def create_logs(guid, directory, pagesize, bearer_token, base_url=None, logs_url
 
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '-g',
+        '--guid',
+        help='This is the GUID of the target node on the OSF',
+        required=True
+    )
+    parser.add_argument(
+        '-t',
+        '--token',
+        help='Auth token for osf. This is required.',
+        required=True
+    )
+    parser.add_argument(
+        '-d',
+        '--directory',
+        help='This is the target Directory for the project and its files'
+    )
+
+    parser.add_argument(
+        '-p',
+        '--pagesize',
+        help='How many logs should appear per file? Default is 100'
+    )
+
+    args = parser.parse_args()
+    guid = args.guid
+    directory = args.directory
+    pagesize = args.pagesize
+    bearer_token = args.token
+
+    # Args handling
+    if not directory:
+        # Setting default to current directory
+        directory = '.'
+    if not pagesize:
+        pagesize = 100
+
+    main(guid, directory, pagesize, bearer_token)
+
