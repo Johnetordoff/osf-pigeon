@@ -45,7 +45,7 @@ class TestIAUploader(unittest.TestCase):
         asyncio.run(chunked_upload('bucketname', 'file_name', b'content'))
         connection_args = mock_upload.call_args_list[0][1]
 
-        assert connection_args['host'] == 'http://s3.us.archive.org'
+        assert connection_args['host'] == 's3.us.archive.org'
         assert connection_args['is_secure'] is False
 
         mock_connection.lookup.assert_called_with('bucketname')
