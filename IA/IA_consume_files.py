@@ -76,4 +76,3 @@ if __name__ == '__main__':
     token = args.token
 
     consume_files(guid, token, directory)
-

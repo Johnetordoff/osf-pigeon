@@ -1,5 +1,6 @@
 from mock import MagicMock
 
+
 class MockCoroutine(MagicMock):
 
     async def __call__(self, *args, **kwargs):
