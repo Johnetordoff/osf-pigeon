@@ -72,7 +72,10 @@ async def chunked_upload(bucket_name: str, filename: str, file_content: bytes):
     )
     bucket = conn.lookup(bucket_name)
     if bucket is None:
-        bucket = conn.create_bucket(bucket_name, headers={'x-archive-meta01-collection': OSF_COLLECTION_NAME})
+        bucket = conn.create_bucket(
+            bucket_name,
+            headers={'x-archive-meta01-collection': OSF_COLLECTION_NAME}
+        )
 
     mp = bucket.initiate_multipart_upload(filename)
 
