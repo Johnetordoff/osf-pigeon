@@ -66,7 +66,7 @@ async def chunked_upload(bucket_name: str, filename: str, file_content: bytes):
     conn = boto.connect_s3(
         IA_ACCESS_KEY,
         IA_SECRET_KEY,
-        host=f'{IA_URL}',
+        host=IA_URL,
         is_secure=False,
         calling_format=OrdinaryCallingFormat(),
     )
